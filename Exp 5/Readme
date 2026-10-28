@@ -1,0 +1,86 @@
+# DBMS Lab - Experiment 5
+
+## Title
+SQL Views, View Updatability, and Recursive Common Table Expressions
+
+## Aim
+To create and query SQL views for department salary summaries and employee hierarchies, test view updatability, and use recursive common table expressions (CTEs) to display employee reporting chains.
+
+## Objectives
+- Create a view that summarizes employee salary information by department.
+- Represent employee-manager relationships using a self-referencing foreign key.
+- Create and query a view that displays employees and their managers.
+- Compare an updatable simple view with a non-updatable aggregate view.
+- Use recursive CTEs to traverse employee reporting hierarchies.
+
+## Database and Prerequisites
+This experiment uses the `EmployeeManagement` database created in Experiment 3.
+
+Required tables:
+- `Department` — department identifiers and names.
+- `Employee` — employee information, salaries, department IDs, and manager IDs.
+
+Requirements:
+- A MySQL-compatible database system that supports views, foreign keys, and recursive CTEs.
+- A SQL client connected to the database server.
+- The Experiment 3 `EmployeeManagement` database with department and employee records.
+
+Select the database before running the experiment:
+
+```sql
+USE EmployeeManagement;
+```
+
+## Concepts Demonstrated
+
+### 1. Department Salary Summary View
+Creates `Department_Salary_Summary` using a `LEFT JOIN` between `Department` and `Employee`. The view reports:
+- Total employees in each department.
+- Total salary.
+- Average salary.
+- Highest salary.
+- Lowest salary.
+
+The view is queried to find departments whose average salary is greater than `75000`.
+
+### 2. Employee Hierarchy
+Adds a nullable `manager_id` column to `Employee` and creates a self-referencing foreign key to `Employee(emp_id)`. Manager IDs are assigned to represent reporting relationships.
+
+### 3. Employee Hierarchy View
+Creates `Employee_Hierarchy` by joining the `Employee` table to itself. The view displays employee names, manager IDs, manager names, salaries, and department IDs.
+
+### 4. Updatable View
+Creates `Employee_Basic`, a simple view containing employee ID, name, salary, and department ID. Updating a row through this view changes the corresponding record in `Employee`.
+
+### 5. Non-updatable View Test
+Attempts to update `Department_Salary_Summary`. Because the view uses grouping and aggregate calculations, it is not directly updatable in the demonstrated setup.
+
+### 6. Recursive CTEs
+Uses `WITH RECURSIVE` to:
+- Display reporting chains beginning with employees who have no manager.
+- Build the reporting chain for a specific employee, starting from employee ID `101` and following manager relationships.
+
+## Procedure
+1. Connect to the SQL server and select the `EmployeeManagement` database.
+2. Confirm that the `Employee` and `Department` tables exist and contain the required records.
+3. Create the department salary summary view and query it.
+4. Add the `manager_id` column and its self-referencing foreign key.
+5. Execute the manager assignment updates from the experiment. Review them before running and avoid repeating them unless resetting the hierarchy.
+6. Create and query the `Employee_Hierarchy` view.
+7. Create `Employee_Basic`, query it, and run the update-through-view example.
+8. Attempt the update against `Department_Salary_Summary` to observe the non-updatable-view behavior.
+9. Run both recursive CTE examples and inspect the reporting-chain results.
+
+## Expected Outcome
+The experiment demonstrates how views can summarize and present data, how self-joins represent employee-manager relationships, how simple views differ from aggregate views in their ability to be updated, and how recursive CTEs traverse reporting hierarchies.
+
+## Notes and Cautions
+- This experiment modifies the existing `Employee` table by adding `manager_id`. Do not add the column again if it already exists.
+- Review the manager assignment statements before execution. The report includes repeated assignments for some departments.
+- Recursive CTE support and exact error messages may vary by database version.
+
+## Conclusion
+This experiment provides practical experience with SQL views, view updatability, self-referencing relationships, and recursive queries. These techniques help present summarized data and explore hierarchical relationships stored in relational databases.
+
+## Author
+Yash Pratap Singh

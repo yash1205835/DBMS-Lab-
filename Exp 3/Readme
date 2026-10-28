@@ -1,0 +1,236 @@
+# DBMS Lab Experiment 3
+
+## Title
+Employee–Department–Project Database
+
+## Aim
+To design and implement an Employee–Department–Project database and perform SQL operations such as selection, projection, aggregation, grouping, filtering, conditional classification, and sorting using relational database queries.
+
+## Objectives
+- Create a relational database schema for departments, employees, projects, and employee-project assignments.
+- Implement database tables with proper data types and constraints.
+- Insert sample data into each table.
+- Perform SQL queries using `SELECT`, `WHERE`, `ORDER BY`, `GROUP BY`, `HAVING`, and `CASE`.
+- Use joins to retrieve meaningful information from related tables.
+- Understand the concept of one-to-many and many-to-many relationships in a database.
+
+## Overview
+This experiment demonstrates how a DBMS stores and retrieves information from related tables. The database contains department information, employee records, project details, and a junction table that links employees to the projects they work on. This model reflects a real-world enterprise structure and helps students understand database design principles and SQL querying concepts.
+
+## Database Schema
+The database consists of four tables:
+
+| Table | Description | Primary Key | Foreign Key |
+|---|---|---|---|
+| `Department` | Stores department details | `dept_id` | - |
+| `Employee` | Stores employee details and salary information | `emp_id` | `dept_id` references `Department` |
+| `Project` | Stores project information and budgets | `project_id` | `dept_id` references `Department` |
+| `Employee_Project` | Stores employee-project assignments and working hours | composite key (`emp_id`, `project_id`) | `emp_id` references `Employee`, `project_id` references `Project` |
+
+### SQL DDL (Schema Creation)
+```sql
+CREATE DATABASE EmployeeManagement;
+USE EmployeeManagement;
+
+CREATE TABLE Department (
+    dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(50) NOT NULL,
+    location VARCHAR(50)
+);
+
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(50) NOT NULL,
+    gender CHAR(1),
+    salary DECIMAL(10,2),
+    hire_date DATE,
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
+);
+
+CREATE TABLE Project (
+    project_id INT PRIMARY KEY,
+    project_name VARCHAR(100) NOT NULL,
+    budget DECIMAL(12,2),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
+);
+
+CREATE TABLE Employee_Project (
+    emp_id INT,
+    project_id INT,
+    hours_worked DECIMAL(5,2),
+    PRIMARY KEY (emp_id, project_id),
+    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id),
+    FOREIGN KEY (project_id) REFERENCES Project(project_id)
+);
+```
+
+## Sample Data
+The database includes:
+- 5 departments
+- 30 employees
+- 8 projects
+- employee-project assignment records with hours worked
+
+### Sample Insertions
+```sql
+INSERT INTO Department (dept_id, dept_name, location) VALUES
+(1, 'IT', 'New Delhi'),
+(2, 'HR', 'Mumbai'),
+(3, 'Finance', 'Bengaluru'),
+(4, 'Marketing', 'Hyderabad'),
+(5, 'Research', 'Pune');
+
+INSERT INTO Employee (emp_id, emp_name, gender, salary, hire_date, dept_id) VALUES
+(101, 'Aman', 'M', 85000, '2020-01-15', 1),
+(102, 'Neha', 'F', 72000, '2019-03-12', 2),
+(103, 'Rohit', 'M', 93000, '2018-07-10', 1),
+(104, 'Sana', 'F', 68000, '2021-11-05', 3),
+(105, 'Vikram', 'M', 97000, '2017-02-20', 5);
+
+INSERT INTO Project (project_id, project_name, budget, dept_id) VALUES
+(201, 'ERP Upgrade', 500000, 1),
+(202, 'Recruitment Portal', 250000, 2),
+(203, 'Budget Analysis', 430000, 3),
+(204, 'Brand Campaign', 300000, 4),
+(205, 'AI Research', 700000, 5);
+
+INSERT INTO Employee_Project (emp_id, project_id, hours_worked) VALUES
+(101, 201, 40.0),
+(102, 202, 32.5),
+(103, 201, 38.0),
+(104, 203, 35.0),
+(105, 205, 45.0);
+```
+
+## SQL Concepts Demonstrated
+
+### 1. Selection
+Retrieve employees with salary above 80,000.
+```sql
+SELECT *
+FROM Employee
+WHERE salary > 80000;
+```
+
+### 2. Projection
+Display employee names and salaries only.
+```sql
+SELECT emp_name, salary
+FROM Employee;
+```
+
+### 3. Aggregate Functions
+Calculate total employees, total salary, average salary, highest salary, and lowest salary.
+```sql
+SELECT COUNT(*) AS total_employees,
+       SUM(salary) AS total_salary,
+       AVG(salary) AS avg_salary,
+       MAX(salary) AS max_salary,
+       MIN(salary) AS min_salary
+FROM Employee;
+```
+
+### 4. GROUP BY
+Count the number of employees in each department.
+```sql
+SELECT dept_id, COUNT(*) AS employee_count
+FROM Employee
+GROUP BY dept_id;
+```
+
+### 5. GROUP BY with JOIN
+Compute average salary per department.
+```sql
+SELECT d.dept_name, AVG(e.salary) AS avg_salary
+FROM Employee e
+JOIN Department d ON e.dept_id = d.dept_id
+GROUP BY d.dept_name;
+```
+
+### 6. HAVING Clause
+Filter departments with average salary greater than 75,000.
+```sql
+SELECT d.dept_name, AVG(e.salary) AS avg_salary
+FROM Employee e
+JOIN Department d ON e.dept_id = d.dept_id
+GROUP BY d.dept_name
+HAVING AVG(e.salary) > 75000;
+```
+
+### 7. CASE Expression
+Classify employee salaries into categories.
+```sql
+SELECT emp_name, salary,
+       CASE
+           WHEN salary >= 90000 THEN 'High Salary'
+           WHEN salary >= 70000 THEN 'Medium Salary'
+           ELSE 'Low Salary'
+       END AS salary_category
+FROM Employee;
+```
+
+### 8. ORDER BY
+List employees in descending order of salary.
+```sql
+SELECT emp_name, salary
+FROM Employee
+ORDER BY salary DESC;
+```
+
+### 9. Join Employee and Department Tables
+Generate an employee-department report.
+```sql
+SELECT e.emp_name, d.dept_name, e.salary
+FROM Employee e
+JOIN Department d ON e.dept_id = d.dept_id
+ORDER BY d.dept_name, e.salary DESC;
+```
+
+### 10. Project and Department Report
+Fetch project details with department names.
+```sql
+SELECT p.project_name, d.dept_name, p.budget
+FROM Project p
+JOIN Department d ON p.dept_id = d.dept_id
+ORDER BY p.budget DESC;
+```
+
+### 11. Employee-Project Assignment Query
+Display employees assigned to projects along with hours worked.
+```sql
+SELECT e.emp_name, p.project_name, ep.hours_worked
+FROM Employee_Project ep
+JOIN Employee e ON ep.emp_id = e.emp_id
+JOIN Project p ON ep.project_id = p.project_id
+ORDER BY ep.hours_worked DESC;
+```
+
+## Requirements
+- MySQL or any SQL-compatible RDBMS
+- SQL command-line tool or GUI client
+- Permission to create databases and tables
+
+## Procedure
+1. Open the SQL client and connect to the database server.
+2. Create the database and select it.
+3. Run the `CREATE TABLE` statements in the correct order.
+4. Insert the department, employee, project, and assignment data.
+5. Execute the queries listed above.
+6. Observe and verify the output.
+
+## Expected Outcome
+On successful execution, the database will contain department, employee, project, and assignment data. The queries will demonstrate filtering, grouping, aggregation, classification, sorting, and joining across related tables. This verifies the core concepts of relational database design and SQL querying.
+
+## Notes
+- `DECIMAL` is used for salary and budget values to preserve precision.
+- The `Employee_Project` table uses a composite primary key to avoid duplicate employee-project pairs.
+- Foreign key constraints ensure referential integrity between the tables.
+- This README summarizes the experiment and includes representative SQL statements for understanding the workflow.
+
+## Conclusion
+This experiment helps students understand how relational databases store data, how relationships are established across tables, and how SQL is used to retrieve and analyze that information efficiently. It forms the foundation for advanced database concepts such as normalization, joins, constraints, and report generation.
+
+## Author
+Yash Pratap Singh

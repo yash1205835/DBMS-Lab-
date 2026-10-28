@@ -1,0 +1,109 @@
+# DBMS Lab - Experiment 6
+
+## Title
+Stored Procedures, Triggers, and Salary Audit Logging
+
+## Aim
+To create and test a stored procedure named `transfer_employee` with input validation and error handling, and to implement triggers for salary validation and salary-change audit logging.
+
+## Objectives
+- Create a stored procedure to transfer an employee to another department.
+- Validate employee and department IDs before changing an employee's department.
+- Use triggers to enforce a minimum salary requirement.
+- Record salary changes in an audit table.
+- Test valid inputs, invalid inputs, and edge cases.
+- Inspect stored procedures and triggers in the database.
+
+## Database and Prerequisites
+This experiment uses the existing `EmployeeManagement` database created in Experiment 3. It requires the `Employee` and `Department` tables and the records needed by the test cases.
+
+Requirements:
+- A MySQL-compatible database system that supports stored procedures, triggers, transactions, and `SIGNAL SQLSTATE`.
+- A SQL client connected to the database server.
+- The `Employee` and `Department` tables from Experiment 3.
+
+Select the database before running the experiment:
+
+```sql
+USE EmployeeManagement;
+```
+
+## Concepts Demonstrated
+
+### 1. Employee Transfer Stored Procedure
+The `transfer_employee(emp_id, new_dept_id)` procedure checks that:
+- The employee exists.
+- The destination department exists.
+- The employee is not already assigned to the destination department.
+
+If the checks pass, the procedure updates the employee's department and commits the transaction. Its exception handler rolls back the transaction if a SQL exception occurs.
+
+Example:
+
+```sql
+CALL transfer_employee(101, 3);
+```
+
+The experiment also tests an unknown employee (`999`), an unknown department (`99`), and an employee already assigned to the requested department.
+
+### 2. Salary Validation Before Insert
+The `validate_employee_salary` trigger runs before an employee is inserted and rejects salaries below `15000`.
+
+### 3. Valid Salary Insert
+The experiment inserts a test employee with a salary of `30000` and queries the employee record to verify the insert.
+
+### 4. Salary Validation Before Update
+The `validate_employee_salary_update` trigger runs before an employee record is updated and rejects salary values below `15000`.
+
+### 5. Salary Audit Table
+The `Salary_Audit` table stores:
+- Audit ID
+- Employee ID
+- Previous salary
+- New salary
+- Timestamp of the change
+- Action description
+
+### 6. Salary Audit Trigger
+The `salary_audit_trigger` runs after an update to `Employee`. When an employee's salary changes, it adds the old and new salary values to `Salary_Audit` with the action description `SALARY UPDATED`.
+
+The experiment tests multiple salary changes and verifies that no audit record is added when the salary remains unchanged.
+
+### 7. NULL Salary Validation
+The insert-validation trigger is updated to reject both `NULL` salaries and salaries below `15000`.
+
+### 8. Inspecting Database Objects
+The experiment uses `SHOW TRIGGERS` and `SHOW PROCEDURE STATUS` to inspect the created triggers and stored procedure.
+
+## Procedure
+1. Connect to the database server and select `EmployeeManagement`.
+2. Confirm that the `Employee` and `Department` tables exist and contain the required records.
+3. Create the `transfer_employee` stored procedure and test the successful call and validation cases.
+4. Create the salary-validation trigger for inserts and test an invalid salary.
+5. Insert a valid test employee with a salary of `30000`.
+6. Create the `BEFORE UPDATE` salary-validation trigger and test an attempted update to a salary below `15000`.
+7. Create the `Salary_Audit` table and the `AFTER UPDATE` salary-audit trigger.
+8. Change the test employee's salary and query `Salary_Audit` to verify the logged changes.
+9. Test an unchanged salary and the `NULL`-salary case.
+10. Run the inspection statements to verify the database objects:
+
+```sql
+SHOW TRIGGERS;
+SHOW PROCEDURE STATUS;
+```
+
+## Expected Outcome
+The procedure should validate the employee and destination department before transferring an employee. The salary-validation triggers should reject salaries below the minimum and, for the updated insert trigger, `NULL` salaries. The audit trigger should record salary changes with their previous and new values, without adding an audit row when the salary is unchanged.
+
+## Notes and Cautions
+- The minimum salary used in this experiment is `15000`.
+- The test examples use employee IDs `131` and `132`. Check that these IDs are unused before inserting test records.
+- This experiment modifies the existing database and creates persistent procedures, triggers, and an audit table. Check whether these objects already exist before rerunning object-creation statements.
+- The `NULL`-salary test replaces the insert-validation trigger with a version that explicitly rejects `NULL`.
+- Trigger behavior and exact output may vary by database version.
+
+## Conclusion
+This experiment demonstrates how stored procedures can encapsulate validated database operations, how triggers can enforce data rules, and how audit tables can preserve a history of salary changes. It also provides practice testing edge cases and inspecting database objects.
+
+## Author
+Yash Pratap Singh
